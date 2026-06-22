@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>花花的健身计划</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .header {
+            background: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .header .date {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .progress-bar {
+            background: white;
+            padding: 15px 20px;
+            margin: 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .progress-bar .label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .progress-bar .bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-bar .bar-fill {
+            height: 100%;
+            background: #4CAF50;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        
+        .section {
+            background: white;
+            margin: 10px;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-title .icon {
+            font-size: 22px;
+        }
+        
+        .meal-item, .exercise-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            gap: 10px;
+        }
+        
+        .meal-item:last-child, .exercise-item:last-child {
+            border-bottom: none;
+        }
+        
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+            transition: all 0.2s;
+        }
+        
+        .checkbox.checked {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: white;
+        }
+        
+        .checkbox svg {
+            width: 14px;
+            height: 14px;
+            display: none;
+        }
+        
+        .checkbox.checked svg {
+            display: block;
+        }
+        
+        .content {
+            flex: 1;
+        }
+        
+        .content .name {
+            font-weight: 500;
+            font-size: 15px;
+            margin-bottom: 3px;
+        }
+        
+        .content .detail {
+            font-size: 13px;
+            color: #888;
+        }
+        
+        .content .calories {
+            font-size: 12px;
+            color: #4CAF50;
+            margin-top: 3px;
+        }
+        
+        .exercise-item .sets-reps {
+            font-size: 13px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .demo-btn {
+            background: #e8f5e9;
+            color: #4CAF50;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        .dislike-btn {
+            background: #ffebee;
+            color: #f44336;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        
+        .dislike-btn.disliked {
+            background: #f44336;
+            color: white;
+        }
+        
+        .summary {
+            background: #4CAF50;
+            color: white;
+            margin: 10px;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .summary .numbers {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+        
+        .summary .number-item {
+            text-align: center;
+        }
+        
+        .summary .number-item .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .summary .number-item .label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 16px;
+            padding: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .modal-header h3 {
+            font-size: 18px;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .demo-img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .demo-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.8;
+        }
+        
+        .demo-text ol {
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+        
+        .demo-text li {
+            margin-bottom: 8px;
+        }
+        
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 50;
+        }
+        
+        .nav-item {
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            cursor: pointer;
+            padding: 5px 15px;
+        }
+        
+        .nav-item.active {
+            color: #4CAF50;
+        }
+        
+        .nav-item .icon {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 2px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .feedback-section {
+            margin: 10px;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        
+        .feedback-section textarea {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .submit-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .submit-btn:disabled {
+            background: #ccc;
+        }
+        
+        .success-msg {
+            display: none;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .history-list {
+            margin-top: 10px;
+        }
+        
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        
+        .history-item .date {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .history-item .status {
+            color: #4CAF50;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌿 花花的健身计划</h1>
+        <div class="date" id="currentDate"></div>
+    </div>
+    
+    <div class="progress-bar">
+        <div class="label">
+            <span>今日完成度</span>
+            <span id="progressPercent">0%</span>
+        </div>
+        <div class="bar">
+            <div class="bar-fill" id="progressBar" style="width: 0%"></div>
+        </div>
+    </div>
+    
+    <!-- 今日页面 -->
+    <div id="todayPage">
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">💪</span>
+                <span>今日训练（周一：上肢推 + 核心）</span>
+            </div>
+            
+            <div class="exercise-item" data-id="ex1">
+                <div class="checkbox" onclick="toggleCheck(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="content">
+                    <div class="name">跪姿俯卧撑</div>
+                    <div class="sets-reps">3组 × 10-12次</div>
+                </div>
+                <button class="demo-btn" onclick="showDemo('pushup')">看图</button>
+            </div>
+            
+            <div class="exercise-item" data-id="ex2">
+                <div class="checkbox" onclick="toggleCheck(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="content">
+                    <div class="name">哑铃肩推</div>
+                    <div class="sets-reps">3组 × 12次</div>
+                </div>
+                <button class="demo-btn" onclick="showDemo('shoulder')">看图</button>
+            </div>
+            
+            <div class="exercise-item" data-id="ex3">
+                <div class="checkbox" onclick="toggleCheck(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="content">
+                    <div class="name">三头臂屈伸</div>
+                    <div class="sets-reps">3组 × 15次</div>
+                </div>
+                <button class="demo-btn" onclick="showDemo('tricep')">看图</button>
+            </div>
+            
+            <div class="exercise-item" data-id="ex4">
+                <div class="checkbox" onclick="toggleCheck(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="content">
+                    <div class="name">平板支撑</div>
+                    <div class="sets-reps">3组 × 30秒</div>
+                </div>
+                <button class="demo-btn" onclick="showDemo('plank')">看图</button>
+            </div>
+            
+            <div class="exercise-item" data-id="ex5">
+                <div class="checkbox" onclick="toggleCheck(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="content">
+                    <div class="name">卷腹</div>
+                    <div class="sets-reps">3组 × 20次</div>
+                </div>
+                <button class="demo-btn" onclick="showDemo('crunch')">看图</button>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">🍽️</span>
+                <span>今日饮食</span>
+            </div>
+            
+            <div class="meal-item" data-id="meal1">
+                <div class="checkbox" onclick="toggleCheck(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="content">
+                    <div class="name">早餐 7:30</div>
+                    <div class="detail">燕麦50g + 牛奶250ml + 鸡蛋2个 + 蓝莓50g</div>
+                    <div class="calories">约497卡</div>
+                </div>
+                <button class="dislike-btn" onclick="toggleDislike(this, '早餐')">不喜欢</button>
+            </div>
+            
+            <div class="meal-item" data-id="meal2">
+                <div class="checkbox" onclick="toggleCheck(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="content">
+                    <div class="name">午餐 12:00</div>
+                    <div class="detail">糙米150g + 鸡胸肉150g + 西兰花200g</div>
+                    <div class="calories">约540卡</div>
+                </div>
+                <button class="dislike-btn" onclick="toggleDislike(this, '午餐')">不喜欢</button>
+            </div>
+            
+            <div class="meal-item" data-id="meal3">
+                <div class="checkbox" onclick="toggleCheck(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="content">
+                    <div class="name">练后加餐 17:00</div>
+                    <div class="detail">蛋白粉30g + 香蕉1根</div>
+                    <div class="calories">约217卡</div>
+                </div>
+                <button class="dislike-btn" onclick="toggleDislike(this, '练后加餐')">不喜欢</button>
+            </div>
+            
+            <div class="meal-item" data-id="meal4">
+                <div class="checkbox" onclick="toggleCheck(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="content">
+                    <div class="name">晚餐 19:00</div>
+                    <div class="detail">红薯150g + 三文鱼120g + 菠菜150g + 豆腐100g</div>
+                    <div class="calories">约489卡</div>
+                </div>
+                <button class="dislike-btn" onclick="toggleDislike(this, '晚餐')">不喜欢</button>
+            </div>
+            
+            <div class="meal-item" data-id="meal5">
+                <div class="checkbox" onclick="toggleCheck(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="content">
+                    <div class="name">睡前加餐 21:30（可选）</div>
+                    <div class="detail">希腊酸奶150g + 杏仁15g</div>
+                    <div class="calories">约175卡</div>
+                </div>
+                <button class="dislike-btn" onclick="toggleDislike(this, '睡前加餐')">不喜欢</button>
+            </div>
+        </div>
+        
+        <div class="summary">
+            <div>今日总摄入</div>
+            <div class="numbers">
+                <div class="number-item">
+                    <div class="value" id="totalCal">1918</div>
+                    <div class="label">卡</div>
+                </div>
+                <div class="number-item">
+                    <div class="value">130g</div>
+                    <div class="label">蛋白质</div>
+                </div>
+                <div class="number-item">
+                    <div class="value">160g</div>
+                    <div class="label">碳水</div>
+                </div>
+                <div class="number-item">
+                    <div class="value">55g</div>
+                    <div class="label">脂肪</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="feedback-section">
+            <div class="section-title">
+                <span class="icon">💬</span>
+                <span>告诉教练</span>
+            </div>
+            <textarea id="feedbackText" placeholder="今天感受如何？不喜欢哪些食物？想调整什么？"></textarea>
+            <button class="submit-btn" onclick="submitFeedback()">发送给教练</button>
+            <div class="success-msg" id="successMsg">✅ 已发送！教练会查看</div>
+        </div>
+    </div>
+    
+    <!-- 历史页面 -->
+    <div id="historyPage" class="hidden">
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">📊</span>
+                <span>完成记录</span>
+            </div>
+            <div class="history-list" id="historyList">
+                <div class="history-item">
+                    <div class="date">今天</div>
+                    <div class="status">进行中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 动作演示弹窗 -->
+    <div class="modal" id="demoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="demoTitle">动作演示</h3>
+                <button class="close-btn" onclick="closeDemo()">&times;</button>
+            </div>
+            <div id="demoBody"></div>
+        </div>
+    </div>
+    
+    <!-- 底部导航 -->
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="switchPage('today')">
+            <span class="icon">📋</span>
+            <span>今日</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('history')">
+            <span class="icon">📊</span>
+            <span>记录</span>
+        </div>
+    </div>
+    
+    <script>
+        // 设置日期
+        const now = new Date();
+        const dateStr = now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日';
+        document.getElementById('currentDate').textContent = dateStr;
+        
+        // 动作演示数据
+        const demoData = {
+            pushup: {
+                title: '跪姿俯卧撑',
+                content: `
+                    <div class="demo-text">
+                        <p><strong>起始姿势：</strong>双膝跪地，双手撑地，与肩同宽</p>
+                        <p><strong>动作要领：</strong></p>
+                        <ol>
+                            <li>身体从膝盖到肩膀呈一条直线</li>
+                            <li>慢慢下降胸部接近地面，吸气</li>
+                            <li>推起时呼气，手臂伸直但不锁死</li>
+                            <li>核心收紧，不要塌腰</li>
+                        </ol>
+                        <p><strong>常见错误：</strong>臀部翘起或下沉、手肘外展过度</p>
+                        <p><strong>替代：</strong>标准俯卧撑（力量足够后）</p>
+                    </div>
+                `
+            },
+            shoulder: {
+                title: '哑铃肩推',
+                content: `
+                    <div class="demo-text">
+                        <p><strong>起始姿势：</strong>坐姿或站姿，哑铃举至肩膀高度</p>
+                        <p><strong>动作要领：</strong></p>
+                        <ol>
+                            <li>大臂与地面平行，小臂垂直</li>
+                            <li>向上推起至手臂伸直，呼气</li>
+                            <li>缓慢下落至起始位置，吸气</li>
+                            <li>不要耸肩，核心稳定</li>
+                        </ol>
+                        <p><strong>常见错误：</strong>腰部过度反弓、耸肩借力</p>
+                        <p><strong>替代：</strong>矿泉水瓶、弹力带</p>
+                    </div>
+                `
+            },
+            tricep: {
+                title: '三头臂屈伸',
+                content: `
+                    <div class="demo-text">
+                        <p><strong>起始姿势：</strong>双手撑在椅子边缘，臀部悬空</p>
+                        <p><strong>动作要领：</strong></p>
+                        <ol>
+                            <li>慢慢弯曲手肘下降身体</li>
+                            <li>大臂尽量贴近身体，不要外展</li>
+                            <li>下降到上臂与地面平行</li>
+                            <li>推起至手臂伸直，呼气</li>
+                        </ol>
+                        <p><strong>常见错误：</strong>手肘外展、下降过快</p>
+                        <p><strong>难度调整：</strong>腿伸直更难，弯曲更简单</p>
+                    </div>
+                `
+            },
+            plank: {
+                title: '平板支撑',
+                content: `
+                    <div class="demo-text">
+                        <p><strong>起始姿势：</strong>前臂撑地，脚尖点地</p>
+                        <p><strong>动作要领：</strong></p>
+                        <ol>
+                            <li>身体从肩膀到脚踝呈一条直线</li>
+                            <li>核心收紧，想象肚子贴向脊柱</li>
+                            <li>臀部不要翘起或下沉</li>
+                            <li>正常呼吸，不要憋气</li>
+                        </ol>
+                        <p><strong>常见错误：</strong>塌腰、翘臀、憋气</p>
+                        <p><strong>进阶：</strong>单手、单脚、侧平板</p>
+                    </div>
+                `
+            },
+            crunch: {
+                title: '卷腹',
+                content: `
+                    <div class="demo-text">
+                        <p><strong>起始姿势：</strong>仰卧，膝盖弯曲，脚放地面</p>
+                        <p><strong>动作要领：</strong></p>
+                        <ol>
+                            <li>双手轻放耳侧或交叉胸前</li>
+                            <li>上背部离地，下背贴地</li>
+                            <li>呼气起身，吸气下落</li>
+                            <li>不要用手拉脖子</li>
+                        </ol>
+                        <p><strong>常见错误：</strong>手拉脖子、整个背部离地</p>
+                        <p><strong>进阶：</strong>反向卷腹、自行车卷腹</p>
+                    </div>
+                `
+            }
+        };
+        
+        // 切换勾选
+        function toggleCheck(el) {
+            el.classList.toggle('checked');
+            updateProgress();
+            saveProgress();
+        }
+        
+        // 更新进度
+        function updateProgress() {
+            const total = document.querySelectorAll('.checkbox').length;
+            const checked = document.querySelectorAll('.checkbox.checked').length;
+            const percent = Math.round((checked / total) * 100);
+            document.getElementById('progressPercent').textContent = percent + '%';
+            document.getElementById('progressBar').style.width = percent + '%';
+        }
+        
+        // 保存进度到localStorage
+        function saveProgress() {
+            const checked = [];
+            document.querySelectorAll('.checkbox.checked').forEach((el, i) => {
+                checked.push(i);
+            });
+            localStorage.setItem('todayProgress', JSON.stringify(checked));
+        }
+        
+        // 加载进度
+        function loadProgress() {
+            const saved = localStorage.getItem('todayProgress');
+            if (saved) {
+                const checked = JSON.parse(saved);
+                const checkboxes = document.querySelectorAll('.checkbox');
+                checked.forEach(i => {
+                    if (checkboxes[i]) checkboxes[i].classList.add('checked');
+                });
+                updateProgress();
+            }
+        }
+        
+        // 显示动作演示
+        function showDemo(type) {
+            const data = demoData[type];
+            document.getElementById('demoTitle').textContent = data.title;
+            document.getElementById('demoBody').innerHTML = data.content;
+            document.getElementById('demoModal').classList.add('active');
+        }
+        
+        // 关闭演示
+        function closeDemo() {
+            document.getElementById('demoModal').classList.remove('active');
+        }
+        
+        // 切换不喜欢
+        function toggleDislike(btn, mealName) {
+            btn.classList.toggle('disliked');
+            if (btn.classList.contains('disliked')) {
+                btn.textContent = '已标记';
+                // 保存到localStorage
+                let dislikes = JSON.parse(localStorage.getItem('dislikes') || '[]');
+                if (!dislikes.includes(mealName)) {
+                    dislikes.push(mealName);
+                    localStorage.setItem('dislikes', JSON.stringify(dislikes));
+                }
+            } else {
+                btn.textContent = '不喜欢';
+                let dislikes = JSON.parse(localStorage.getItem('dislikes') || '[]');
+                dislikes = dislikes.filter(d => d !== mealName);
+                localStorage.setItem('dislikes', JSON.stringify(dislikes));
+            }
+        }
+        
+        // 提交反馈
+        function submitFeedback() {
+            const text = document.getElementById('feedbackText').value;
+            if (!text.trim()) return;
+            
+            // 保存反馈
+            let feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
+            feedbacks.push({
+                date: new Date().toISOString(),
+                text: text
+            });
+            localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
+            
+            document.getElementById('successMsg').style.display = 'block';
+            document.getElementById('feedbackText').value = '';
+            
+            setTimeout(() => {
+                document.getElementById('successMsg').style.display = 'none';
+            }, 3000);
+        }
+        
+        // 切换页面
+        function switchPage(page) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+            
+            if (page === 'today') {
+                document.getElementById('todayPage').classList.remove('hidden');
+                document.getElementById('historyPage').classList.add('hidden');
+            } else {
+                document.getElementById('todayPage').classList.add('hidden');
+                document.getElementById('historyPage').classList.remove('hidden');
+                loadHistory();
+            }
+        }
+        
+        // 加载历史记录
+        function loadHistory() {
+            const list = document.getElementById('historyList');
+            const feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
+            const dislikes = JSON.parse(localStorage.getItem('dislikes') || '[]');
+            
+            let html = '';
+            
+            // 今日进度
+            const total = document.querySelectorAll('.checkbox').length;
+            const checked = document.querySelectorAll('.checkbox.checked').length;
+            html += `<div class="history-item">
+                <div class="date">今天</div>
+                <div class="status">完成 ${checked}/${total} 项</div>
+            </div>`;
+            
+            // 反馈记录
+            feedbacks.slice(-5).reverse().forEach(f => {
+                const d = new Date(f.date);
+                html += `<div class="history-item">
+                    <div class="date">${d.getMonth()+1}月${d.getDate()}日</div>
+                    <div>反馈: ${f.text.substring(0, 30)}${f.text.length > 30 ? '...' : ''}</div>
+                </div>`;
+            });
+            
+            // 不喜欢记录
+            if (dislikes.length > 0) {
+                html += `<div class="history-item">
+                    <div class="date">标记不喜欢的食物</div>
+                    <div>${dislikes.join('、')}</div>
+                </div>`;
+            }
+            
+            list.innerHTML = html || '<div class="history-item">暂无记录</div>';
+        }
+        
+        // 初始化
+        loadProgress();
+        
+        // 点击模态框外部关闭
+        document.getElementById('demoModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDemo();
+        });
+    </script>
+</body>
+</html>
